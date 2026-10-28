@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KretySolver</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#241a10;color:#f2e3c6;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+.screen{display:none;min-height:100vh}.screen.on{display:block}
+.center{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;text-align:center}
+h1{font-family:Georgia,serif;font-size:clamp(38px,9vw,56px);color:#e0b030;margin:4px 0}
+.sub{font-family:Georgia,serif;font-style:italic;color:#c9b48c;font-size:18px;margin-bottom:32px}
+button{font:inherit;color:#f2e3c6;border:0;cursor:pointer;border-radius:12px;background:#6b4423}
+button:hover{background:#85562c}
+.go{background:#4a6b2a;font-weight:700;font-size:20px;padding:16px 40px}.go:hover{background:#5e8c3a}
+.card{background:#3a2a1a;border:2px solid #6b4423;border-radius:18px;padding:30px 36px;max-width:440px;width:100%}
+.card h2{font-family:Georgia,serif;color:#e0b030;margin:0 0 18px;font-size:28px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:10px 0;text-align:left}
+input{width:100px;padding:9px;font:inherit;font-size:17px;text-align:center;background:#4a3522;border:1px solid #6b4423;color:#f2e3c6;border-radius:8px}
+.err{color:#ff9a5c;min-height:22px;margin:10px 0 0;font-size:14px}
+.link{background:none;color:#c9b48c;font-size:14px;margin-top:8px}.link:hover{background:#4a3522}
+.top{display:flex;justify-content:space-between;align-items:center;background:#3a2a1a;padding:10px 16px;flex-wrap:wrap;gap:8px}
+.top b{font-family:Georgia,serif;font-size:22px;color:#e0b030}
+.top button{padding:9px 16px;font-weight:700;font-size:14px;margin-left:8px}
+.top .g{background:#4a6b2a}.top .g:hover{background:#5e8c3a}
+#info{text-align:center;margin:10px 12px 2px;font-size:15px}
+#hint{text-align:center;margin:0 12px 8px;font-size:14px;font-weight:700;color:#e0b030;min-height:20px}
+#board{display:grid;gap:2px;justify-content:center;margin:6px auto;padding:0 8px;user-select:none}
+.c{display:flex;align-items:center;justify-content:center;font-weight:700;border-radius:4px;cursor:pointer;background:#e07b24;color:#7a3d0c;border:2px solid #2a1b0d}
+.c.rev{background:#d9c7a0;cursor:pointer}
+.c.dug{background:#5a3a1e;color:#f2e3c6}
+.c.star{background:#e0b030;color:#2a1b0d}
+.c.sure{background:#9b2c1d;color:#fff}
+.c.safe{background:#5e8c3a;color:#fff}
+.c.best{border-color:#e0b030;box-shadow:0 0 0 2px #e0b030 inset}
+.c.pct{font-size:.55em}
+.tools{background:#3a2a1a;padding:10px 8px 14px;text-align:center;position:sticky;bottom:0}
+.tools small{display:block;color:#c9b48c;margin-bottom:6px;font-size:13px}
+.tools button{padding:9px 12px;margin:3px;font-weight:700;border-radius:10px;min-width:42px}
+.tools button.sel{background:#4a6b2a;outline:2px solid #e0b030}
+</style>
+</head>
+<body>
+
+<div class="screen on" id="menu"><div class="center">
+  <div style="font-size:64px">🍂</div><h1>KretySolver</h1>
+  <div class="sub">Wykop wszystkie krety i znajdź nagrodę</div>
+  <button class="go" onclick="show('setup')">Rozpocznij symulację</button>
+</div></div>
+
+<div class="screen" id="setup"><div class="center"><div class="card">
+  <h2>Ustawienia planszy</h2>
+  <div class="row">Liczba rzędów (poziomo)<input id="f_rows" value="6" inputmode="numeric"></div>
+  <div class="row">Liczba kolumn (pionowo)<input id="f_cols" value="6" inputmode="numeric"></div>
+  <div class="row">Liczba kretów<input id="f_moles" value="6" inputmode="numeric"></div>
+  <div class="row">Liczba nagród<input id="f_prizes" value="1" inputmode="numeric"></div>
+  <div class="err" id="ferr"></div>
+  <button class="go" style="margin-top:12px;width:100%;font-size:18px;padding:13px" onclick="start()">Rozpocznij symulację</button>
+  <button class="link" onclick="show('menu')">← Wróć do menu</button>
+</div></div></div>
+
+<div class="screen" id="game">
+  <div class="top"><b>🍂 KretySolver</b>
+    <div><button onclick="resetBoard()">Zresetuj symulację</button><button class="g" onclick="show('setup')">Rozpocznij nową</button></div></div>
+  <div id="info"></div><div id="hint"></div>
+  <div id="board"></div>
+  <div class="tools"><small>Co jest pod klikniętym polem? (prawy klik = wyczyść pole)</small><div id="tools"></div></div>
+</div>
+
+<script>
+//SOLVER_START
+const NB=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+function comb(n,k){if(k<0||k>n)return 0n;k=Math.min(k,n-k);let r=1n;for(let i=1;i<=k;i++)r=r*BigInt(n-k+i)/BigInt(i);return r}
+function conv(a,b){const o={};for(const x in a)for(const y in b){const k=+x+ +y;o[k]=(o[k]||0n)+a[x]*b[y]}return o}
+function solveComp(n,cons,limit=3000000){
+  const cc=Array.from({length:n},()=>[]);cons.forEach((c,i)=>c[0].forEach(j=>cc[j].push(i)));
+  const need=cons.map(c=>c[1]),got=cons.map(()=>0),rem=cons.map(c=>c[0].length),as=new Array(n).fill(0);
+  const counts={},cell={};let nodes=0;
+  (function rec(i,k){
+    if(++nodes>limit)throw 'big';
+    if(i===n){counts[k]=(counts[k]||0n)+1n;const a=cell[k]||(cell[k]=new Array(n).fill(0n));for(let j=0;j<n;j++)if(as[j])a[j]++;return}
+    for(let v=0;v<2;v++){
+      for(const ci of cc[i]){rem[ci]--;got[ci]+=v}
+      let ok=true;for(const ci of cc[i])if(got[ci]>need[ci]||got[ci]+rem[ci]<need[ci]){ok=false;break}
+      if(ok){as[i]=v;rec(i+1,k+v)}
+      for(const ci of cc[i]){rem[ci]++;got[ci]-=v}
+    }
+    as[i]=0;
+  })(0,0);
+  return [counts,cell];
+}
+// g[r][c]: null zakryte, 'K' kret, 'N' nagroda, 0..8 cyfra (cyfra liczy krety + nagrody)
+function analyze(g,R,C,M,P){
+  const hid=[];let dm=0,dp=0;
+  for(let r=0;r<R;r++)for(let c=0;c<C;c++){const v=g[r][c];if(v===null)hid.push([r,c]);else if(v==='K')dm++;else if(v==='N')dp++}
+  const mr=M-dm,pr=P-dp;
+  if(mr<0)return{err:'Zaznaczono więcej kretów, niż jest na planszy.'};
+  if(pr<0)return{err:'Zaznaczono więcej nagród, niż jest na planszy.'};
+  if(mr+pr>hid.length)return{err:`Za mało zakrytych pól: zostało ${mr} kretów i ${pr} nagród, a zakrytych pól jest ${hid.length}.`};
+  const cons=[];
+  for(let r=0;r<R;r++)for(let c=0;c<C;c++){const v=g[r][c];if(typeof v!=='number')continue;
+    const U=[];let known=0;
+    for(const[dr,dc]of NB){const a=r+dr,b=c+dc;if(a<0||b<0||a>=R||b>=C)continue;const x=g[a][b];if(x===null)U.push(a*C+b);else if(x==='K'||x==='N')known++}
+    const nd=v-known;
+    if(nd<0||nd>U.length)return{err:`Cyfra ${v} (rząd ${r+1}, kolumna ${c+1}) jest sprzeczna z tym, co jest dookoła.`};
+    if(U.length)cons.push([U,nd]);
+  }
+  const par=new Map();const find=x=>{while(par.get(x)!==x){par.set(x,par.get(par.get(x)));x=par.get(x)}return x};
+  for(const[U]of cons){U.forEach(x=>{if(!par.has(x))par.set(x,x)});const r0=find(U[0]);for(const x of U.slice(1)){const rx=find(x);if(rx!==r0)par.set(rx,r0)}}
+  const groups=new Map();for(const c of cons){const k=find(c[0][0]);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(c)}
+  const I=hid.filter(h=>!par.has(h[0]*C+h[1])).length,T=mr+pr;
+  const comps=[];
+  try{for(const gl of groups.values()){
+    const cells=[...new Set(gl.flatMap(c=>c[0]))].sort((a,b)=>a-b),idx=new Map(cells.map((x,i)=>[x,i]));
+    const[counts,cell]=solveComp(cells.length,gl.map(c=>[c[0].map(x=>idx.get(x)),c[1]]));
+    if(!Object.keys(counts).length)return{err:'Dane są sprzeczne - sprawdź wpisane cyfry.'};
+    comps.push({cells,counts,cell});
+  }}catch(e){if(e==='big')return{err:'Zbyt wiele możliwości do przeliczenia - podpowiedzi niedostępne.'};throw e}
+  const ways=f=>comb(I,T-f);
+  let full={0:1n};for(const cp of comps)full=conv(full,cp.counts);
+  let W=0n;for(const f in full)W+=full[f]*ways(+f);
+  if(W===0n)return{err:'Dane są sprzeczne z liczbą kretów i nagród na planszy.'};
+  const occ=new Map(),pf=(a,b)=>Number(a*1000000n/b)/1e6;
+  comps.forEach((comp,j)=>{
+    let o={0:1n};comps.forEach((cp,jj)=>{if(jj!==j)o=conv(o,cp.counts)});
+    const gk={};for(const k in comp.counts){let s=0n;for(const f in o)s+=o[f]*ways(+k+ +f);gk[k]=s}
+    comp.cells.forEach((x,i)=>{let wc=0n;for(const k in comp.cell)wc+=comp.cell[k][i]*gk[k];occ.set(x,wc===W?1:wc===0n?0:pf(wc,W))});
+  });
+  if(I>0){let num=0n;for(const f in full)num+=full[f]*ways(+f)*BigInt(T-f);
+    const p=num===W*BigInt(I)?1:num===0n?0:pf(num,W*BigInt(I));
+    for(const h of hid){const k=h[0]*C+h[1];if(!par.has(k))occ.set(k,p)}}
+  const cells=new Map();
+  for(const[k,p]of occ){
+    if(p===0)cells.set(k,['safe',0]);
+    else if(p===1)cells.set(k,[pr===0?'mole':mr===0?'prize':'dig',1]);
+    else cells.set(k,['unk',p*mr/T]);
+  }
+  return{cells};
+}
+//SOLVER_END
+
+let R,C,M,P,grid,res,err,best,tool=1;
+const $=id=>document.getElementById(id);
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id))}
+function start(){
+  const v=['rows','cols','moles','prizes'].map(k=>$('f_'+k).value.trim());
+  const e=m=>{$('ferr').textContent=m};
+  if(!v.every(x=>/^\d+$/.test(x)))return e('Wpisz same liczby całkowite.');
+  [R,C,M,P]=v.map(Number);
+  if(R<1||R>30||C<1||C>30)return e('Rzędy i kolumny: od 1 do 30.');
+  if(M+P>R*C)return e(`Krety + nagrody (${M+P}) nie mieszczą się na planszy (${R*C} pól).`);
+  e('');resetBoard();show('game');
+}
+function resetBoard(){grid=Array.from({length:R},()=>Array(C).fill(null));update()}
+function update(){
+  const a=analyze(grid,R,C,M,P);err=a.err||null;res=a.cells||null;best=null;
+  if(res){const vals=[...res.entries()];
+    if(!vals.some(([,v])=>v[0]!=='unk')){const u=vals.filter(([,v])=>v[0]==='unk').sort((x,y)=>x[1][1]-y[1][1]);if(u.length)best=u[0][0]}}
+  render();
+}
+const NUMC=['#7a6a50','#2f6f9f','#3f7d2f','#b03a2e','#5b3a8a','#8a4b1c','#1f7a7a','#222','#666'];
+function render(){
+  const flat=grid.flat(),dm=flat.filter(v=>v==='K').length,dp=flat.filter(v=>v==='N').length;
+  let info=`Krety: ${dm}/${M}  •  Nagrody: ${dp}/${P}`,hint='';
+  if(err){hint='⚠ '+err}
+  else{
+    const vs=[...res.values()],todo=vs.filter(v=>['mole','prize','dig'].includes(v[0])).length,safe=vs.filter(v=>v[0]==='safe').length;
+    info+=`  •  Do wykopania: ${todo}  •  Puste: ${safe}`;
+    if(dm===M&&dp===P)hint='🎉 Wszystkie krety i nagrody wykopane!';
+    else if(best!==null)hint=`Brak pewnych ruchów. Najmniejsze ryzyko: rząd ${Math.floor(best/C)+1}, kolumna ${best%C+1} (~${Math.round(res.get(best)[1]*100)}% że kret).`;
+    else if(todo||safe)hint='K = kret  •  ★ = nagroda  •  ! = kret albo nagroda (kop)  •  ✓ = puste';
+    else hint='Zacznij od wykopania dowolnego pola i wpisz, co tam jest.';
+  }
+  $('info').textContent=info;$('hint').textContent=hint;
+  const s=Math.max(26,Math.min(64,Math.floor((innerWidth-24)/C)-2,Math.floor((innerHeight-290)/R)-2));
+  const b=$('board');b.style.gridTemplateColumns=`repeat(${C},${s}px)`;b.style.fontSize=Math.round(s*.46)+'px';
+  let h='';
+  for(let r=0;r<R;r++)for(let c=0;c<C;c++){
+    const v=grid[r][c],k=r*C+c;let cls='c',t='',st='';
+    if(v==='K'){cls+=' dug';t='K'}
+    else if(v==='N'){cls+=' star';t='★'}
+    else if(typeof v==='number'){cls+=' rev';t=v;st=`color:${NUMC[v]}`}
+    else{const x=res&&res.get(k);
+      if(x){const[kd,p]=x;
+        if(kd==='mole'){cls+=' sure';t='K'}else if(kd==='prize'){cls+=' star';t='★'}
+        else if(kd==='dig'){cls+=' sure';t='!'}else if(kd==='safe'){cls+=' safe';t='✓'}
+        else if(s>=38){cls+=' pct';t=Math.min(99,Math.max(1,Math.round(p*100)))+'%'}}}
+    if(best===k)cls+=' best';
+    h+=`<div class="${cls}" data-r="${r}" data-c="${c}" style="width:${s}px;height:${s}px;${st}">${t}</div>`;
+  }
+  b.innerHTML=h;
+}
+function setCell(el,val){
+  if(!el||el.dataset.r===undefined)return;
+  grid[+el.dataset.r][+el.dataset.c]=val;update();
+}
+$('board').addEventListener('click',e=>setCell(e.target.closest('.c'),tool==='X'?null:tool));
+$('board').addEventListener('contextmenu',e=>{e.preventDefault();setCell(e.target.closest('.c'),null)});
+const TOOLS=[['K','Kret'],['N','Nagroda ★'],...[0,1,2,3,4,5,6,7,8].map(i=>[i,''+i]),['X','Wyczyść']];
+function drawTools(){$('tools').innerHTML=TOOLS.map(([k,l])=>`<button class="${k===tool?'sel':''}" data-k="${k}">${l}</button>`).join('')}
+$('tools').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.k;tool=/^\d$/.test(k)?+k:k;drawTools()});
+drawTools();
+addEventListener('resize',()=>{if(grid&&$('game').classList.contains('on'))render()});
+document.querySelectorAll('input').forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter')start()}));
+</script>
+</body>
+</html>
