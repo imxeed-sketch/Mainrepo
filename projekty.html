@@ -1,440 +1,207 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="pl" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@Rzabek77 | Moje Portfolio</title>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #030703;
-            --matrix-green: #00ff66;
-            --matrix-green-dim: rgba(0, 255, 102, 0.15);
-            --matrix-green-glow: rgba(0, 255, 102, 0.4);
-            --panel-bg: rgba(2, 12, 5, 0.85);
-            --border-color: #00ff66;
-            --text-color: #c0f0c0;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Share Tech Mono', monospace;
-            min-height: 100vh;
-            overflow-x: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        #matrix-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: none;
-            opacity: 0.25;
-        }
-
-        .scanlines {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
-            pointer-events: none;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 3px, 6px 100%;
-        }
-
-        .container {
-            position: relative;
-            z-index: 10;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-            width: 100%;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .top-bar {
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-        .btn-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--matrix-green-dim);
-            color: var(--matrix-green);
-            border: 1px solid var(--matrix-green);
-            padding: 10px 20px;
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 1rem;
-            text-decoration: none;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 10px rgba(0, 255, 102, 0.2);
-            cursor: pointer;
-        }
-
-        .btn-back:hover {
-            background: var(--matrix-green);
-            color: #000;
-            box-shadow: 0 0 20px var(--matrix-green);
-        }
-
-        .page-title {
-            text-align: center;
-            margin-bottom: 30px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px var(--matrix-green-glow);
-        }
-
-        .page-title h1 {
-            font-size: 1.8rem;
-            color: var(--matrix-green);
-        }
-
-        .showcase-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        @media (max-width: 900px) {
-            .showcase-grid {
-                grid-template-columns: 1fr;
+    <title>@Rzabek77 | Archiwum Projektów</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        matrix: {
+                            green: '#00ff66',
+                            bright: '#79ffb2',
+                            dark: '#003b15',
+                            bg: '#050a07',
+                        }
+                    },
+                    fontFamily: { mono: ['Fira Code', 'Courier New', 'monospace'] }
+                }
             }
         }
-
-        .image-card {
-            background: var(--panel-bg);
-            border: 1px solid var(--matrix-green);
-            padding: 15px;
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #030705; color: #d1fae5; font-family: 'Fira Code', monospace; overflow-x: hidden; }
+        .neon-text { color: #00ff66; text-shadow: 0 0 10px #00ff66; }
+        .gothic-card {
+            background: rgba(6, 15, 10, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 255, 102, 0.3);
             position: relative;
-            box-shadow: 0 0 15px rgba(0, 255, 102, 0.1);
-            overflow: hidden;
-            opacity: 0;
-            transform: translateY(50px);
-            transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.2s ease;
         }
-
-        .image-card.revealed {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .image-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, transparent 0%, rgba(0, 255, 102, 0.2) 50%, transparent 100%);
-            transform: translateY(-100%);
-            pointer-events: none;
-            z-index: 3;
-        }
-
-        .image-card.scanning::before {
-            animation: matrixScan 1.5s ease-in-out forwards;
-        }
-
-        @keyframes matrixScan {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
-        }
-
-        .image-header {
-            font-size: 0.9rem;
-            color: var(--matrix-green);
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px dashed var(--matrix-green-dim);
-            padding-bottom: 5px;
-        }
-
-        .image-container {
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            border: 1px solid var(--matrix-green-dim);
-        }
-
-        .image-container img {
-            width: 100%;
-            height: auto;
-            display: block;
-            filter: contrast(1.1) brightness(0.9);
-            transition: transform 0.5s ease, filter 0.5s ease;
-        }
-
-        .image-container:hover img {
-            transform: scale(1.03);
-            filter: contrast(1.2) brightness(1.1);
-        }
-
-        .image-container::after {
-            content: '[KLIKNIJ, ABY POWIĘKSZYĆ]';
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.8);
-            color: var(--matrix-green);
-            padding: 4px 8px;
-            font-size: 0.75rem;
-            border: 1px solid var(--matrix-green);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .image-container:hover::after {
-            opacity: 1;
-        }
-
-        .contact-section {
-            background: var(--panel-bg);
-            border: 1px solid var(--matrix-green);
-            padding: 25px;
-            text-align: center;
-            box-shadow: 0 0 20px rgba(0, 255, 102, 0.15);
-            margin-top: auto;
-            margin-bottom: 20px;
-        }
-
-        .contact-title {
-            color: var(--matrix-green);
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 8px var(--matrix-green-glow);
-        }
-
-        .contact-grid {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .contact-btn {
-            background: var(--matrix-green-dim);
-            color: var(--matrix-green);
-            border: 1px solid var(--matrix-green);
-            padding: 12px 20px;
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 0.95rem;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 10px rgba(0, 255, 102, 0.1);
-        }
-
-        .contact-btn:hover {
-            background: var(--matrix-green);
-            color: #000;
-            box-shadow: 0 0 15px var(--matrix-green);
-            transform: translateY(-2px);
-        }
-
-        .lightbox {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 5, 2, 0.95);
-            z-index: 1000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .lightbox.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .lightbox img {
-            max-width: 90%;
-            max-height: 90vh;
-            border: 2px solid var(--matrix-green);
-            box-shadow: 0 0 30px var(--matrix-green-glow);
-        }
-
-        .lightbox-close {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            color: var(--matrix-green);
-            font-size: 2rem;
-            cursor: pointer;
-            background: none;
-            border: 1px solid var(--matrix-green);
-            width: 45px;
-            height: 45px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.3s ease;
-        }
-
-        .lightbox-close:hover {
-            background: var(--matrix-green);
-            color: #000;
+        .scanlines {
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 4px, 6px 100%; pointer-events: none;
         }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col justify-between items-center relative selection:bg-matrix-green selection:text-black">
+    <canvas id="matrixCanvas" class="fixed inset-0 w-full h-full z-0 pointer-events-none opacity-30"></canvas>
+    <div class="scanlines fixed inset-0 z-10 pointer-events-none"></div>
 
-    <div class="scanlines"></div>
-    <canvas id="matrix-canvas"></canvas>
-
-    <div class="container">
-        <!-- Przycisk Powrotu do Strony Główniej -->
-        <div class="top-bar">
-            <a href="index.html" class="btn-back">
-                <span>&larr;</span> Powrót do strony głównej
+    <div class="w-full max-w-5xl p-6 z-20 flex flex-col flex-1">
+        <!-- Górny pasek z powrotem -->
+        <div class="flex justify-between items-center mb-6">
+            <a href="index.html" class="px-4 py-2 rounded bg-matrix-green/10 text-matrix-green border border-matrix-green hover:bg-matrix-green hover:text-black transition-all text-xs font-bold flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i> Powrót do strony głównej
             </a>
+            <div class="text-xs text-matrix-green/60 uppercase tracking-widest">Archiwum Systemowe</div>
         </div>
 
-        <div class="page-title">
-            <h1>Archiwum Projektów & Portfolio Wersji</h1>
-        </div>
-
-        <!-- Prezentacja Grafik / Wersji -->
-        <div class="showcase-grid">
-            <div class="image-card" id="card-lite">
-                <div class="image-header">
-                    <span>ARCHIWUM_PROJEKTÓW // [LITE]</span>
-                    <span>lite.jpg</span>
-                </div>
-                <div class="image-container" onclick="openLightbox('lite.jpg')">
-                    <img src="lite.jpg" alt="Wersja LITE" onerror="this.src='https://via.placeholder.com/600x400/021205/00ff66?text=Brak+pliku+lite.jpg'">
-                </div>
+        <div class="gothic-card rounded-xl p-6 sm:p-8 flex flex-col flex-1 shadow-2xl border border-matrix-green/40 mb-6">
+            <!-- Nagłówek -->
+            <div class="flex items-center space-x-3 pb-4 border-b border-matrix-green/30 mb-6">
+                <i class="fas fa-code-branch text-matrix-green text-xl"></i>
+                <h1 class="text-xl font-bold text-matrix-green tracking-wide">ARCHIWUM PROJEKTÓW</h1>
             </div>
 
-            <div class="image-card" id="card-rage">
-                <div class="image-header">
-                    <span>PORTFOLIO_RAGE // [RAGE]</span>
-                    <span>rage.jpg</span>
+            <!-- Filtry -->
+            <div class="flex flex-wrap gap-2 text-xs mb-6">
+                <button onclick="filterProjects('all')" class="filter-btn active px-3 py-1.5 rounded border border-matrix-green/40 bg-matrix-green/20 text-matrix-bright transition-colors">Wszystkie</button>
+                <button onclick="filterProjects('script')" class="filter-btn px-3 py-1.5 rounded border border-matrix-green/20 bg-black/40 text-gray-400 hover:text-matrix-bright transition-colors">Skrypty Python</button>
+                <button onclick="filterProjects('web')" class="filter-btn px-3 py-1.5 rounded border border-matrix-green/20 bg-black/40 text-gray-400 hover:text-matrix-bright transition-colors">Hero Zero Tools</button>
+            </div>
+
+            <!-- Siatka Projektów -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="projectsGrid">
+                
+                <!-- Projekt 1 -->
+                <div class="project-card gothic-card p-5 rounded-lg bg-black/50 border border-matrix-green/20" data-category="script">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs px-2 py-0.5 rounded bg-matrix-green/10 text-matrix-bright border border-matrix-green/30">Python App</span>
+                        <span class="text-[10px] text-gray-400"><i class="fas fa-database mr-1"></i>Database</span>
+                    </div>
+                    <h3 class="text-base font-bold text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fas fa-wine-bottle text-matrix-green"></i> PDC App
+                    </h3>
+                    <p class="text-xs text-gray-400 mb-4">Aplikacja do tworzenia bazy danych kolekcji perfum oraz odlewek.</p>
+                    <div class="bg-black/80 rounded p-2.5 mb-4 border border-matrix-green/10 text-xs font-mono text-matrix-bright/80 flex justify-between items-center">
+                        <span>$ python pdc.py</span>
+                        <span class="text-[10px] text-gray-500">Skrypt Python</span>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-matrix-green/10 text-xs">
+                        <span class="text-matrix-green/60"><i class="fab fa-python mr-1"></i> Python 3</span>
+                        <a href="./pdc.py" download="pdc.py" class="px-3.5 py-1.5 rounded bg-matrix-dark/80 text-matrix-bright border border-matrix-green/40 hover:bg-matrix-green hover:text-black font-semibold transition-all flex items-center gap-1.5">
+                            <i class="fas fa-download text-xs"></i> Pobierz pdc.py
+                        </a>
+                    </div>
                 </div>
-                <div class="image-container" onclick="openLightbox('rage.jpg')">
-                    <img src="rage.jpg" alt="Wersja RAGE" onerror="this.src='https://via.placeholder.com/600x400/021205/00ff66?text=Brak+pliku+rage.jpg'">
+
+                <!-- Projekt 2 -->
+                <div class="project-card gothic-card p-5 rounded-lg bg-black/50 border border-matrix-green/20" data-category="script">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs px-2 py-0.5 rounded bg-matrix-green/10 text-matrix-bright border border-matrix-green/30">Python App</span>
+                        <span class="text-[10px] text-gray-400"><i class="fas fa-boxes mr-1"></i>Inventory</span>
+                    </div>
+                    <h3 class="text-base font-bold text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fas fa-tags text-matrix-green"></i> Vinted Stock Manager
+                    </h3>
+                    <p class="text-xs text-gray-400 mb-4">System zarządzania bazą danych stanu towaru na sprzedaż Vinted/e-commerce.</p>
+                    <div class="bg-black/80 rounded p-2.5 mb-4 border border-matrix-green/10 text-xs font-mono text-matrix-bright/80 flex justify-between items-center">
+                        <span>$ python VSM.py</span>
+                        <span class="text-[10px] text-gray-500">Skrypt Python</span>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-matrix-green/10 text-xs">
+                        <span class="text-matrix-green/60"><i class="fab fa-python mr-1"></i> Python 3</span>
+                        <a href="./VSM.py" download="VSM.py" class="px-3.5 py-1.5 rounded bg-matrix-dark/80 text-matrix-bright border border-matrix-green/40 hover:bg-matrix-green hover:text-black font-semibold transition-all flex items-center gap-1.5">
+                            <i class="fas fa-download text-xs"></i> Pobierz VSM.py
+                        </a>
+                    </div>
                 </div>
+
+                <!-- Projekt 3 -->
+                <div class="project-card gothic-card p-5 rounded-lg bg-black/50 border border-matrix-green/20" data-category="web">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs px-2 py-0.5 rounded bg-matrix-green/10 text-matrix-bright border border-matrix-green/30">Web Tool</span>
+                        <span class="text-[10px] text-gray-400"><i class="fas fa-gamepad mr-1"></i>Hero Zero</span>
+                    </div>
+                    <h3 class="text-base font-bold text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fas fa-bug text-matrix-green"></i> Symulator Kretów
+                    </h3>
+                    <p class="text-xs text-gray-400 mb-4">Symulator ułatwiający optymalne rozwiązywanie zagadek z kretami.</p>
+                    <div class="bg-black/80 rounded p-2.5 mb-4 border border-matrix-green/10 text-xs font-mono text-matrix-bright/80 flex justify-between items-center">
+                        <span>URL: krety.html</span>
+                        <span class="text-[10px] text-gray-500">Narzędzie Web</span>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-matrix-green/10 text-xs">
+                        <span class="text-matrix-green/60"><i class="fab fa-html5 mr-1"></i> HTML / JS</span>
+                        <a href="krety.html" class="px-3.5 py-1.5 rounded bg-matrix-green text-black border border-matrix-green hover:bg-matrix-bright font-bold transition-all flex items-center gap-1.5">
+                            <i class="fas fa-external-link-alt text-xs"></i> Otwórz stronę
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Projekt 4 -->
+                <div class="project-card gothic-card p-5 rounded-lg bg-black/50 border border-matrix-green/20" data-category="web">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs px-2 py-0.5 rounded bg-matrix-green/10 text-matrix-bright border border-matrix-green/30">Web Tool</span>
+                        <span class="text-[10px] text-gray-400"><i class="fas fa-user-ninja mr-1"></i>Hero Zero</span>
+                    </div>
+                    <h3 class="text-base font-bold text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fas fa-mask text-matrix-green"></i> Kryjówka Superłotrów
+                    </h3>
+                    <p class="text-xs text-gray-400 mb-4">Kompendium wiedzy oraz kalkulator eventowy dla Kryjówki Superłotrów.</p>
+                    <div class="bg-black/80 rounded p-2.5 mb-4 border border-matrix-green/10 text-xs font-mono text-matrix-bright/80 flex justify-between items-center">
+                        <span>URL: lotry.html</span>
+                        <span class="text-[10px] text-gray-500">Kompendium</span>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-matrix-green/10 text-xs">
+                        <span class="text-matrix-green/60"><i class="fab fa-html5 mr-1"></i> HTML / JS</span>
+                        <a href="lotry.html" class="px-3.5 py-1.5 rounded bg-matrix-green text-black border border-matrix-green hover:bg-matrix-bright font-bold transition-all flex items-center gap-1.5">
+                            <i class="fas fa-external-link-alt text-xs"></i> Otwórz kompendium
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-8 pt-4 border-t border-matrix-green/20 text-center text-xs text-matrix-green/60">
+                Masz pomysł na własny projekt? Skontaktuj się ze mną na Telegramie: <a href="https://t.me/ekstrawertyk" target="_blank" class="text-matrix-bright underline font-bold">@ekstrawertyk</a>
             </div>
         </div>
-
-        <!-- Sekcja Kontaktowa -->
-        <div class="contact-section">
-            <div class="contact-title">// Skontaktuj się ze mną //</div>
-            <div class="contact-grid">
-                <a href="mailto:imxeed@gmail.com" class="contact-btn">
-                    📧 e-mail: imxeed@gmail.com
-                </a>
-                <a href="tel:+48881250319" class="contact-btn">
-                    📞 nr tel: 881 250 319
-                </a>
-                <a href="https://t.me/ekstrawertyk" target="_blank" class="contact-btn">
-                    ✈️ telegram: @ekstrawertyk
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Podgląd Pełnoekranowy -->
-    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
-        <button class="lightbox-close">&times;</button>
-        <img id="lightbox-img" src="" alt="Powiększenie">
     </div>
 
     <script>
-        const canvas = document.getElementById('matrix-canvas');
+        const canvas = document.getElementById('matrixCanvas');
         const ctx = canvas.getContext('2d');
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        const characters = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$_&-+()/*";:?!~|';
-        const fontSize = 14;
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resizeCanvas(); window.addEventListener('resize', resizeCanvas);
+        const alphabet = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%-+*';
+        const fontSize = 16;
         let columns = Math.floor(canvas.width / fontSize);
-        let drops = Array(columns).fill(1);
-
+        let rainDrops = Array(columns).fill(1);
         function drawMatrix() {
-            ctx.fillStyle = 'rgba(3, 7, 3, 0.08)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#00ff66';
-            ctx.font = fontSize + 'px "Share Tech Mono", monospace';
-
-            for (let i = 0; i < drops.length; i++) {
-                const text = characters.charAt(Math.floor(Math.random() * characters.length));
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                    drops[i] = 0;
-                }
-                drops[i]++;
+            ctx.fillStyle = 'rgba(3, 7, 5, 0.08)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#00ff66'; ctx.font = fontSize + 'px monospace';
+            for (let i = 0; i < rainDrops.length; i++) {
+                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+                if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) rainDrops[i] = 0;
+                rainDrops[i]++;
             }
         }
-        setInterval(drawMatrix, 35);
+        setInterval(drawMatrix, 33);
 
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const cardLite = document.getElementById('card-lite');
-                const cardRage = document.getElementById('card-rage');
-
-                cardLite.classList.add('scanning', 'revealed');
-                cardRage.classList.add('scanning', 'revealed');
-
-                setTimeout(() => {
-                    cardLite.classList.remove('scanning');
-                    cardRage.classList.remove('scanning');
-                }, 1500);
-            }, 300);
-        });
-
-        function openLightbox(imageSrc) {
-            const lightbox = document.getElementById('lightbox');
-            const lightboxImg = document.getElementById('lightbox-img');
-            lightboxImg.src = imageSrc;
-            lightbox.classList.add('active');
-        }
-
-        function closeLightbox() {
-            const lightbox = document.getElementById('lightbox');
-            lightbox.classList.remove('active');
+        function filterProjects(category) {
+            const cards = document.querySelectorAll('.project-card');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            filterBtns.forEach(btn => {
+                btn.classList.remove('active', 'bg-matrix-green/20', 'text-matrix-bright', 'border-matrix-green/40');
+                btn.classList.add('bg-black/40', 'text-gray-400', 'border-matrix-green/20');
+            });
+            event.target.classList.add('active', 'bg-matrix-green/20', 'text-matrix-bright', 'border-matrix-green/40');
+            cards.forEach(card => {
+                if (category === 'all' || card.dataset.category === category) card.style.display = 'block';
+                else card.style.display = 'none';
+            });
         }
     </script>
 </body>
