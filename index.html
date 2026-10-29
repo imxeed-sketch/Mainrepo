@@ -49,12 +49,10 @@
         }
     </script>
 
-    <!-- Google Fonts -->
+    <!-- Google Fonts & FontAwesome -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;900&family=Fira+Code:wght@300;400;600;700&display=swap" rel="stylesheet">
-
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -65,7 +63,6 @@
             overflow-x: hidden;
         }
 
-        /* Neon Glow Effects */
         .neon-text {
             color: #00ff66;
             text-shadow: 
@@ -76,21 +73,6 @@
                 0 0 80px #00551b;
         }
 
-        .neon-box {
-            box-shadow: 
-                0 0 15px rgba(0, 255, 102, 0.2),
-                inset 0 0 15px rgba(0, 255, 102, 0.1);
-            border: 1px solid rgba(0, 255, 102, 0.4);
-        }
-
-        .neon-box:hover {
-            box-shadow: 
-                0 0 25px rgba(0, 255, 102, 0.4),
-                inset 0 0 20px rgba(0, 255, 102, 0.2);
-            border-color: rgba(0, 255, 102, 0.8);
-        }
-
-        /* Glassmorphism Gothic Frame */
         .gothic-card {
             background: rgba(6, 15, 10, 0.75);
             backdrop-filter: blur(12px);
@@ -109,37 +91,18 @@
             pointer-events: none;
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #030705;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #003b15;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #00ff66;
-        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #030705; }
+        ::-webkit-scrollbar-thumb { background: #003b15; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ff66; }
 
-        /* Scanline Overlay Effect */
         .scanlines {
-            background: linear-gradient(
-                rgba(18, 16, 16, 0) 50%, 
-                rgba(0, 0, 0, 0.25) 50%
-            ), linear-gradient(
-                90deg,
-                rgba(255, 0, 0, 0.03),
-                rgba(0, 255, 0, 0.01),
-                rgba(0, 0, 255, 0.03)
-            );
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
             background-size: 100% 4px, 6px 100%;
             pointer-events: none;
         }
 
-        /* Custom Corner Ornaments */
         .corner-ornament {
             position: absolute;
             width: 12px;
@@ -155,40 +118,43 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between items-center relative selection:bg-matrix-green selection:text-black">
 
-    <!-- Canvas Tła - Matrix Digital Rain -->
     <canvas id="matrixCanvas" class="fixed inset-0 w-full h-full z-0 pointer-events-none opacity-40"></canvas>
-    
-    <!-- Ambient Fog Gradient Overlay -->
     <div class="fixed inset-0 bg-radial from-transparent via-[#030705]/70 to-[#030705] z-0 pointer-events-none"></div>
     <div class="scanlines fixed inset-0 z-10 pointer-events-none"></div>
 
-    <!-- Pasek Górny / Dźwięk Ambient & Status -->
+    <!-- Pasek Górny -->
     <header class="w-full max-w-5xl p-4 sm:p-6 flex justify-between items-center z-20">
         <div class="flex items-center space-x-2 text-xs text-matrix-green/70">
             <span class="w-2 h-2 rounded-full bg-matrix-green animate-ping"></span>
             <span class="tracking-widest uppercase">SYSTEM // ONLINE</span>
         </div>
         
-        <!-- Przełącznik Audio Ambient -->
-        <button id="audioToggleBtn" onclick="toggleAudio()" class="flex items-center space-x-2 px-3 py-1.5 rounded-md bg-matrix-dark/40 border border-matrix-green/30 hover:border-matrix-green text-matrix-green text-xs transition-all duration-300">
-            <i id="audioIcon" class="fas fa-volume-mute"></i>
-            <span id="audioText">AMBIENT SOUND: OFF</span>
-        </button>
+        <div class="flex items-center space-x-3">
+            <!-- Przycisk Moje Portfolio -->
+            <a href="projekty.html" 
+               onmouseenter="playHoverSound()"
+               class="flex items-center space-x-2 px-3.5 py-1.5 rounded-md bg-matrix-green/10 border border-matrix-green text-matrix-bright hover:bg-matrix-green hover:text-black text-xs font-semibold transition-all duration-300 shadow-md shadow-matrix-green/10">
+                <i class="fas fa-layer-group"></i>
+                <span>MOJE PORTFOLIO</span>
+            </a>
+
+            <!-- Audio Toggle -->
+            <button id="audioToggleBtn" onclick="toggleAudio()" class="flex items-center space-x-2 px-3 py-1.5 rounded-md bg-matrix-dark/40 border border-matrix-green/30 hover:border-matrix-green text-matrix-green text-xs transition-all duration-300">
+                <i id="audioIcon" class="fas fa-volume-mute"></i>
+                <span id="audioText">SOUND: OFF</span>
+            </button>
+        </div>
     </header>
 
-    <!-- Główna Sekcja Wizytówki -->
+    <!-- Główny Panel Wizytówki -->
     <main class="w-full max-w-xl px-4 py-8 my-auto z-20 flex flex-col items-center text-center">
-        
-        <!-- Karta Główna z Elementami Gotyckimi -->
         <div class="gothic-card w-full rounded-xl p-6 sm:p-10 shadow-2xl relative transition-all duration-500 hover:border-matrix-green/50">
             
-            <!-- Ozdobne Narożniki Gothic-Cyber -->
             <div class="corner-ornament top-left"></div>
             <div class="corner-ornament top-right"></div>
             <div class="corner-ornament bottom-left"></div>
             <div class="corner-ornament bottom-right"></div>
 
-            <!-- Avatar / Symbol Digital Gothic -->
             <div class="relative w-24 h-24 mx-auto mb-6 flex items-center justify-center">
                 <div class="absolute inset-0 rounded-full border border-matrix-green/40 animate-spin" style="animation-duration: 15s;"></div>
                 <div class="absolute inset-2 rounded-full border border-dashed border-matrix-green/60 animate-spin" style="animation-duration: 10s; animation-direction: reverse;"></div>
@@ -197,7 +163,6 @@
                 </div>
             </div>
 
-            <!-- Główny Nagłówek Neonowy -->
             <h1 class="text-4xl sm:text-5xl font-extrabold tracking-wider neon-text mb-2 font-mono animate-flicker select-none">
                 @Rzabek77
             </h1>
@@ -209,8 +174,6 @@
 
             <!-- Dane Kontaktowe -->
             <div class="space-y-4 mb-8 text-left sm:text-center">
-                
-                <!-- Telegram Link -->
                 <a href="https://t.me/ekstrawertyk" target="_blank" rel="noopener noreferrer" 
                    onmouseenter="playHoverSound()"
                    class="group flex items-center justify-between sm:justify-center sm:space-x-4 p-3.5 rounded-lg bg-black/40 border border-matrix-green/20 hover:border-matrix-green transition-all duration-300 hover:translate-y-[-2px] hover:bg-matrix-dark/30">
@@ -225,7 +188,6 @@
                     <i class="fas fa-external-link-alt text-xs text-matrix-green/40 group-hover:text-matrix-green transition-colors"></i>
                 </a>
 
-                <!-- E-mail Link -->
                 <a href="mailto:imxeed@gmail.com" 
                    onmouseenter="playHoverSound()"
                    class="group flex items-center justify-between sm:justify-center sm:space-x-4 p-3.5 rounded-lg bg-black/40 border border-matrix-green/20 hover:border-matrix-green transition-all duration-300 hover:translate-y-[-2px] hover:bg-matrix-dark/30">
@@ -239,10 +201,9 @@
                     </div>
                     <i class="fas fa-paper-plane text-xs text-matrix-green/40 group-hover:text-matrix-green transition-colors flex-shrink-0 ml-2"></i>
                 </a>
-
             </div>
 
-            <!-- Przycisk "Przejrzyj moje projekty" -->
+            <!-- Przycisk do modala projektów -->
             <button onclick="openProjectsModal()" 
                     onmouseenter="playHoverSound()"
                     class="w-full py-4 px-6 rounded-lg font-bold text-sm tracking-wider uppercase bg-matrix-dark/80 text-matrix-green border border-matrix-green hover:bg-matrix-green hover:text-black transition-all duration-300 shadow-lg shadow-matrix-green/10 hover:shadow-matrix-green/40 flex items-center justify-center space-x-3 group cursor-pointer">
@@ -254,23 +215,18 @@
         </div>
     </main>
 
-    <!-- Stopka -->
     <footer class="w-full max-w-5xl p-6 text-center text-xs text-matrix-green/40 z-20 font-mono">
         <p>&copy; 2026 @Rzabek77. Wszelkie prawa zastrzeżone // Gothic Cyber Systems</p>
     </footer>
 
-    <!-- Okno Modalne: Projekty -->
+    <!-- Modal z Projektami -->
     <div id="projectsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
-        
         <div class="gothic-card w-full max-w-4xl max-h-[85vh] rounded-xl flex flex-col overflow-hidden shadow-2xl border border-matrix-green/40 translate-y-8 transition-transform duration-300" id="modalContainer">
-            
-            <!-- Ozdobne Narożniki Modal -->
             <div class="corner-ornament top-left"></div>
             <div class="corner-ornament top-right"></div>
             <div class="corner-ornament bottom-left"></div>
             <div class="corner-ornament bottom-right"></div>
 
-            <!-- Nagłówek Modala -->
             <div class="p-5 border-b border-matrix-green/30 flex justify-between items-center bg-black/40">
                 <div class="flex items-center space-x-3">
                     <i class="fas fa-code-branch text-matrix-green text-lg"></i>
@@ -281,118 +237,93 @@
                 </button>
             </div>
 
-            <!-- Filtry Projektów -->
             <div class="px-5 py-3 border-b border-matrix-green/20 bg-black/20 flex flex-wrap gap-2 text-xs">
-                <button onclick="filterProjects('all')" class="filter-btn active px-3 py-1.5 rounded border border-matrix-green/40 bg-matrix-green/20 text-matrix-bright hover:bg-matrix-green/30 transition-colors">Wszystkie</button>
-                <button onclick="filterProjects('bot')" class="filter-btn px-3 py-1.5 rounded border border-matrix-green/20 bg-black/40 text-gray-400 hover:text-matrix-bright hover:border-matrix-green/40 transition-colors">Boty Telegram</button>
-                <button onclick="filterProjects('web')" class="filter-btn px-3 py-1.5 rounded border border-matrix-green/20 bg-black/40 text-gray-400 hover:text-matrix-bright hover:border-matrix-green/40 transition-colors">Aplikacje Web</button>
-                <button onclick="filterProjects('script')" class="filter-btn px-3 py-1.5 rounded border border-matrix-green/20 bg-black/40 text-gray-400 hover:text-matrix-bright hover:border-matrix-green/40 transition-colors">Skrypty & Tools</button>
+                <button onclick="filterProjects('all')" class="filter-btn active px-3 py-1.5 rounded border border-matrix-green/40 bg-matrix-green/20 text-matrix-bright transition-colors">Wszystkie</button>
+                <button onclick="filterProjects('script')" class="filter-btn px-3 py-1.5 rounded border border-matrix-green/20 bg-black/40 text-gray-400 hover:text-matrix-bright hover:border-matrix-green/40 transition-colors">Skrypty Python</button>
+                <button onclick="filterProjects('web')" class="filter-btn px-3 py-1.5 rounded border border-matrix-green/20 bg-black/40 text-gray-400 hover:text-matrix-bright hover:border-matrix-green/40 transition-colors">Hero Zero Tools</button>
             </div>
 
-            <!-- Lista / Siatka Projektów -->
             <div class="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4" id="projectsGrid">
                 
-                <!-- Projekt 1: PDC App -->
                 <div class="project-card gothic-card p-4 rounded-lg bg-black/50 border border-matrix-green/20 hover:border-matrix-green/60 transition-all duration-300" data-category="script">
                     <div class="flex justify-between items-start mb-2">
                         <span class="text-xs px-2 py-0.5 rounded bg-matrix-green/10 text-matrix-bright border border-matrix-green/30 font-mono">Python App</span>
                         <span class="text-[10px] text-gray-400 font-mono"><i class="fas fa-database mr-1"></i>Database</span>
                     </div>
-                    <h3 class="text-base font-bold text-gray-100 mb-1 group-hover:text-matrix-green flex items-center gap-2">
+                    <h3 class="text-base font-bold text-gray-100 mb-1 flex items-center gap-2">
                         <i class="fas fa-wine-bottle text-matrix-green"></i> PDC App
                     </h3>
-                    <p class="text-xs text-gray-400 mb-3">
-                        Aplikacja do tworzenia bazy danych kolekcji perfum oraz odlewek. Pozwala na katalogowanie i zarządzanie zbiorami.
-                    </p>
-                    <!-- Terminal Hint -->
+                    <p class="text-xs text-gray-400 mb-3">Aplikacja do tworzenia bazy danych kolekcji perfum oraz odlewek.</p>
                     <div class="bg-black/80 rounded p-2 mb-3 border border-matrix-green/10 text-[11px] font-mono text-matrix-bright/80 flex items-center justify-between">
                         <span>$ python pdc.py</span>
                         <span class="text-[9px] text-gray-500">Skrypt Python</span>
                     </div>
                     <div class="flex items-center justify-between pt-2 border-t border-matrix-green/10 text-xs">
                         <span class="text-matrix-green/60"><i class="fab fa-python mr-1"></i> Python 3</span>
-                        <a href="./pdc.py" download="pdc.py" 
-                           onmouseenter="playHoverSound()"
-                           class="px-3 py-1.5 rounded bg-matrix-dark/80 text-matrix-bright border border-matrix-green/40 hover:bg-matrix-green hover:text-black font-semibold transition-all flex items-center gap-1.5 shadow">
+                        <a href="./pdc.py" download="pdc.py" onmouseenter="playHoverSound()" class="px-3 py-1.5 rounded bg-matrix-dark/80 text-matrix-bright border border-matrix-green/40 hover:bg-matrix-green hover:text-black font-semibold transition-all flex items-center gap-1.5">
                             <i class="fas fa-download text-xs"></i> Pobierz pdc.py
                         </a>
                     </div>
                 </div>
 
-                <!-- Projekt 2: Vinted Stock Manager -->
                 <div class="project-card gothic-card p-4 rounded-lg bg-black/50 border border-matrix-green/20 hover:border-matrix-green/60 transition-all duration-300" data-category="script">
                     <div class="flex justify-between items-start mb-2">
                         <span class="text-xs px-2 py-0.5 rounded bg-matrix-green/10 text-matrix-bright border border-matrix-green/30 font-mono">Python App</span>
                         <span class="text-[10px] text-gray-400 font-mono"><i class="fas fa-boxes mr-1"></i>Inventory</span>
                     </div>
-                    <h3 class="text-base font-bold text-gray-100 mb-1 group-hover:text-matrix-green flex items-center gap-2">
+                    <h3 class="text-base font-bold text-gray-100 mb-1 flex items-center gap-2">
                         <i class="fas fa-tags text-matrix-green"></i> Vinted Stock Manager
                     </h3>
-                    <p class="text-xs text-gray-400 mb-3">
-                        System zarządzania bazą danych stanu towaru na sprzedaż poprzez Vinted oraz inne platformy e-commerce.
-                    </p>
-                    <!-- Terminal Hint -->
+                    <p class="text-xs text-gray-400 mb-3">System zarządzania bazą danych stanu towaru na sprzedaż Vinted/e-commerce.</p>
                     <div class="bg-black/80 rounded p-2 mb-3 border border-matrix-green/10 text-[11px] font-mono text-matrix-bright/80 flex items-center justify-between">
                         <span>$ python VSM.py</span>
                         <span class="text-[9px] text-gray-500">Skrypt Python</span>
                     </div>
                     <div class="flex items-center justify-between pt-2 border-t border-matrix-green/10 text-xs">
                         <span class="text-matrix-green/60"><i class="fab fa-python mr-1"></i> Python 3</span>
-                        <a href="./VSM.py" download="VSM.py" 
-                           onmouseenter="playHoverSound()"
-                           class="px-3 py-1.5 rounded bg-matrix-dark/80 text-matrix-bright border border-matrix-green/40 hover:bg-matrix-green hover:text-black font-semibold transition-all flex items-center gap-1.5 shadow">
+                        <a href="./VSM.py" download="VSM.py" onmouseenter="playHoverSound()" class="px-3 py-1.5 rounded bg-matrix-dark/80 text-matrix-bright border border-matrix-green/40 hover:bg-matrix-green hover:text-black font-semibold transition-all flex items-center gap-1.5">
                             <i class="fas fa-download text-xs"></i> Pobierz VSM.py
                         </a>
                     </div>
                 </div>
 
-                <!-- Projekt 3: Hero Zero - Symulator kretów -->
                 <div class="project-card gothic-card p-4 rounded-lg bg-black/50 border border-matrix-green/20 hover:border-matrix-green/60 transition-all duration-300" data-category="web">
                     <div class="flex justify-between items-start mb-2">
                         <span class="text-xs px-2 py-0.5 rounded bg-matrix-green/10 text-matrix-bright border border-matrix-green/30 font-mono">Web Tool</span>
                         <span class="text-[10px] text-gray-400 font-mono"><i class="fas fa-gamepad mr-1"></i>Hero Zero</span>
                     </div>
-                    <h3 class="text-base font-bold text-gray-100 mb-1 group-hover:text-matrix-green flex items-center gap-2">
+                    <h3 class="text-base font-bold text-gray-100 mb-1 flex items-center gap-2">
                         <i class="fas fa-bug text-matrix-green"></i> Symulator Kretów
                     </h3>
-                    <p class="text-xs text-gray-400 mb-3">
-                        Narzędzie pomocnicze i symulator ułatwiający optymalne rozwiązywanie zagadek z kretami w evencie Hero Zero.
-                    </p>
+                    <p class="text-xs text-gray-400 mb-3">Symulator ułatwiający optymalne rozwiązywanie zagadek z kretami.</p>
                     <div class="bg-black/80 rounded p-2 mb-3 border border-matrix-green/10 text-[11px] font-mono text-matrix-bright/80 flex items-center justify-between">
                         <span>URL: krety.html</span>
                         <span class="text-[9px] text-gray-500">Narzędzie Web</span>
                     </div>
                     <div class="flex items-center justify-between pt-2 border-t border-matrix-green/10 text-xs">
                         <span class="text-matrix-green/60"><i class="fab fa-html5 mr-1"></i> HTML / JS</span>
-                        <a href="krety.html" 
-                           onmouseenter="playHoverSound()"
-                           class="px-3 py-1.5 rounded bg-matrix-green text-black border border-matrix-green hover:bg-matrix-bright font-bold transition-all flex items-center gap-1.5 shadow">
+                        <a href="krety.html" onmouseenter="playHoverSound()" class="px-3 py-1.5 rounded bg-matrix-green text-black border border-matrix-green hover:bg-matrix-bright font-bold transition-all flex items-center gap-1.5">
                             <i class="fas fa-external-link-alt text-xs"></i> Otwórz stronę
                         </a>
                     </div>
                 </div>
 
-                <!-- Projekt 4: Hero Zero - Kryjówka Superłotrów -->
                 <div class="project-card gothic-card p-4 rounded-lg bg-black/50 border border-matrix-green/20 hover:border-matrix-green/60 transition-all duration-300" data-category="web">
                     <div class="flex justify-between items-start mb-2">
                         <span class="text-xs px-2 py-0.5 rounded bg-matrix-green/10 text-matrix-bright border border-matrix-green/30 font-mono">Web Tool</span>
                         <span class="text-[10px] text-gray-400 font-mono"><i class="fas fa-user-ninja mr-1"></i>Hero Zero</span>
                     </div>
-                    <h3 class="text-base font-bold text-gray-100 mb-1 group-hover:text-matrix-green flex items-center gap-2">
+                    <h3 class="text-base font-bold text-gray-100 mb-1 flex items-center gap-2">
                         <i class="fas fa-mask text-matrix-green"></i> Kryjówka Superłotrów
                     </h3>
-                    <p class="text-xs text-gray-400 mb-3">
-                        Kompleksowe kompendium wiedzy, przeliczniki oraz kalkulator eventowy dla Kryjówki Superłotrów.
-                    </p>
+                    <p class="text-xs text-gray-400 mb-3">Kompendium wiedzy oraz kalkulator eventowy dla Kryjówki Superłotrów.</p>
                     <div class="bg-black/80 rounded p-2 mb-3 border border-matrix-green/10 text-[11px] font-mono text-matrix-bright/80 flex items-center justify-between">
                         <span>URL: lotry.html</span>
                         <span class="text-[9px] text-gray-500">Kompendium</span>
                     </div>
                     <div class="flex items-center justify-between pt-2 border-t border-matrix-green/10 text-xs">
                         <span class="text-matrix-green/60"><i class="fab fa-html5 mr-1"></i> HTML / JS</span>
-                        <a href="lotry.html" 
-                           onmouseenter="playHoverSound()"
-                           class="px-3 py-1.5 rounded bg-matrix-green text-black border border-matrix-green hover:bg-matrix-bright font-bold transition-all flex items-center gap-1.5 shadow">
+                        <a href="lotry.html" onmouseenter="playHoverSound()" class="px-3 py-1.5 rounded bg-matrix-green text-black border border-matrix-green hover:bg-matrix-bright font-bold transition-all flex items-center gap-1.5">
                             <i class="fas fa-external-link-alt text-xs"></i> Otwórz kompendium
                         </a>
                     </div>
@@ -400,51 +331,29 @@
 
             </div>
 
-            <!-- Stopka Modala -->
             <div class="p-4 border-t border-matrix-green/20 bg-black/40 text-center text-xs text-matrix-green/60">
                 Masz pomysł na własny projekt? Skontaktuj się ze mną na Telegramie: <a href="https://t.me/ekstrawertyk" target="_blank" class="text-matrix-bright underline font-bold">@ekstrawertyk</a>
             </div>
-
         </div>
     </div>
 
-    <!-- Skrypty JS logiczne, animacje i efekty dźwiękowe -->
     <script>
-        /* ====================================================
-           1. MATRIX DIGITAL RAIN ANIMATION
-           ==================================================== */
         const canvas = document.getElementById('matrixCanvas');
         const ctx = canvas.getContext('2d');
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        // Znaki Matrix (Katakana + Cyfry + Łacińskie)
-        const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン';
-        const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%-+*';
-        const alphabet = katakana + latin;
-
+        const alphabet = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%-+*';
         const fontSize = 16;
         let columns = Math.floor(canvas.width / fontSize);
         let rainDrops = Array(columns).fill(1);
-
-        // Reakcja na ruch myszki (tworzenie efektu zakłóceń)
-        let mouseX = 0;
-        let mouseY = 0;
-        window.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-        });
+        let mouseX = 0, mouseY = 0;
+        window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
 
         function drawMatrix() {
-            // Czyszczenie tła z lekkim prześwitem (efekt smugi)
             ctx.fillStyle = 'rgba(3, 7, 5, 0.08)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
             ctx.fillStyle = '#00ff66';
             ctx.font = fontSize + 'px monospace';
 
@@ -452,60 +361,33 @@
                 const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
                 const x = i * fontSize;
                 const y = rainDrops[i] * fontSize;
-
-                // Odległość od kursoru do rozpraszania deszczu
                 const dist = Math.hypot(x - mouseX, y - mouseY);
-                if (dist < 100) {
-                    ctx.fillStyle = '#ffffff'; // Błysk w pobliżu myszki
-                } else if (Math.random() > 0.95) {
-                    ctx.fillStyle = '#79ffb2'; // Bielszy czubek
-                } else {
-                    ctx.fillStyle = '#00ff66'; // Standardowa zielona
-                }
+
+                if (dist < 100) ctx.fillStyle = '#ffffff';
+                else if (Math.random() > 0.95) ctx.fillStyle = '#79ffb2';
+                else ctx.fillStyle = '#00ff66';
 
                 ctx.fillText(text, x, y);
-
-                if (y > canvas.height && Math.random() > 0.975) {
-                    rainDrops[i] = 0;
-                }
+                if (y > canvas.height && Math.random() > 0.975) rainDrops[i] = 0;
                 rainDrops[i]++;
             }
         }
-
         setInterval(drawMatrix, 33);
 
-        /* ====================================================
-           2. WEB AUDIO API - SYNTH AMBIENT & SOUND FX
-           ==================================================== */
-        let audioCtx = null;
-        let isAudioPlaying = false;
-        let ambientOsc = null;
-        let ambientGain = null;
-
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-        }
-
+        let audioCtx = null, isAudioPlaying = false, ambientOsc = null, ambientGain = null;
+        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
         function toggleAudio() {
             initAudio();
-
             const audioIcon = document.getElementById('audioIcon');
             const audioText = document.getElementById('audioText');
 
             if (!isAudioPlaying) {
-                // Włączenie dźwięku Ambient (mroczny, głęboki ton)
                 audioCtx.resume();
-                
                 ambientOsc = audioCtx.createOscillator();
                 ambientGain = audioCtx.createGain();
-
-                // Niska częstotliwość dla klimatu Dark Cave Ambient
                 ambientOsc.type = 'sine';
-                ambientOsc.frequency.setValueAtTime(55, audioCtx.currentTime); // Nutka A1
+                ambientOsc.frequency.setValueAtTime(55, audioCtx.currentTime);
 
-                // Modulacja LFO dla efektu falowania
                 const lfo = audioCtx.createOscillator();
                 lfo.frequency.setValueAtTime(0.2, audioCtx.currentTime);
                 const lfoGain = audioCtx.createGain();
@@ -516,56 +398,43 @@
 
                 ambientGain.gain.setValueAtTime(0.01, audioCtx.currentTime);
                 ambientGain.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime + 3);
-
                 ambientOsc.connect(ambientGain);
                 ambientGain.connect(audioCtx.destination);
                 ambientOsc.start();
 
                 isAudioPlaying = true;
                 audioIcon.className = "fas fa-volume-up text-matrix-green";
-                audioText.innerText = "AMBIENT SOUND: ON";
+                audioText.innerText = "SOUND: ON";
             } else {
-                // Wyłączenie Dźwięku
                 if (ambientGain) {
                     ambientGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1);
-                    setTimeout(() => {
-                        if (ambientOsc) ambientOsc.stop();
-                    }, 1000);
+                    setTimeout(() => { if (ambientOsc) ambientOsc.stop(); }, 1000);
                 }
                 isAudioPlaying = false;
                 audioIcon.className = "fas fa-volume-mute";
-                audioText.innerText = "AMBIENT SOUND: OFF";
+                audioText.innerText = "SOUND: OFF";
             }
         }
 
-        // Efekt dźwiękowy UI Hover
         function playHoverSound() {
             if (!audioCtx || !isAudioPlaying) return;
             try {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(800, audioCtx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.05);
-
                 gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
                 gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
-
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.05);
             } catch(e) {}
         }
 
-        /* ====================================================
-           3. MODAL PROJEKTÓW & FILTROWANIE
-           ==================================================== */
         const modal = document.getElementById('projectsModal');
         const modalContainer = document.getElementById('modalContainer');
-
         function openProjectsModal() {
             playHoverSound();
             modal.classList.remove('pointer-events-none', 'opacity-0');
@@ -581,14 +450,8 @@
             modalContainer.classList.add('translate-y-8');
         }
 
-        // Zamknięcie po kliknięciu poza zawartość
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeProjectsModal();
-            }
-        });
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeProjectsModal(); });
 
-        // Filtrowanie Projektów
         function filterProjects(category) {
             playHoverSound();
             const cards = document.querySelectorAll('.project-card');

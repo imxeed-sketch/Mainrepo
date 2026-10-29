@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alias.live/Rzabek - Archiwum Projektów & Wersje</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #030703;
+            --matrix-green: #00ff66;
+            --matrix-green-dim: rgba(0, 255, 102, 0.15);
+            --matrix-green-glow: rgba(0, 255, 102, 0.4);
+            --panel-bg: rgba(2, 12, 5, 0.85);
+            --border-color: #00ff66;
+            --text-color: #c0f0c0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Matrix Rain Canvas */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.25;
+        }
+
+        /* Scanlines Overlay */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.03),
+                rgba(0, 255, 0, 0.01),
+                rgba(0, 0, 255, 0.03)
+            );
+            background-size: 100% 3px, 6px 100%;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Bar & Back Button */
+        .top-bar {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--matrix-green-dim);
+            color: var(--matrix-green);
+            border: 1px solid var(--matrix-green);
+            padding: 10px 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1rem;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.2);
+            cursor: pointer;
+        }
+
+        .btn-back:hover {
+            background: var(--matrix-green);
+            color: #000;
+            box-shadow: 0 0 20px var(--matrix-green);
+        }
+
+        /* Header / Title */
+        .page-title {
+            text-align: center;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--matrix-green-glow);
+        }
+
+        .page-title h1 {
+            font-size: 1.8rem;
+            color: var(--matrix-green);
+        }
+
+        /* Images Showcase Section */
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 900px) {
+            .showcase-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .image-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--matrix-green);
+            padding: 15px;
+            position: relative;
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.1);
+            overflow: hidden;
+            /* Animation state: hidden before build */
+            opacity: 0;
+            transform: translateY(50px);
+            transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.2s ease;
+        }
+
+        .image-card.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .image-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 0%, rgba(0, 255, 102, 0.2) 50%, transparent 100%);
+            transform: translateY(-100%);
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .image-card.scanning::before {
+            animation: matrixScan 1.5s ease-in-out forwards;
+        }
+
+        @keyframes matrixScan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        .image-header {
+            font-size: 0.9rem;
+            color: var(--matrix-green);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed var(--matrix-green-dim);
+            padding-bottom: 5px;
+        }
+
+        .image-container {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid var(--matrix-green-dim);
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            filter: contrast(1.1) brightness(0.9);
+            transition: transform 0.5s ease, filter 0.5s ease;
+        }
+
+        .image-container:hover img {
+            transform: scale(1.03);
+            filter: contrast(1.2) brightness(1.1);
+        }
+
+        .image-container::after {
+            content: '[KLIKNIJ, ABY POWIĘKSZYĆ]';
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--matrix-green);
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border: 1px solid var(--matrix-green);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .image-container:hover::after {
+            opacity: 1;
+        }
+
+        /* Bottom Contact Section */
+        .contact-section {
+            background: var(--panel-bg);
+            border: 1px solid var(--matrix-green);
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 255, 102, 0.15);
+            margin-top: auto;
+            margin-bottom: 20px;
+        }
+
+        .contact-title {
+            color: var(--matrix-green);
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px var(--matrix-green-glow);
+        }
+
+        .contact-grid {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .contact-btn {
+            background: var(--matrix-green-dim);
+            color: var(--matrix-green);
+            border: 1px solid var(--matrix-green);
+            padding: 12px 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.95rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.1);
+        }
+
+        .contact-btn:hover {
+            background: var(--matrix-green);
+            color: #000;
+            box-shadow: 0 0 15px var(--matrix-green);
+            transform: translateY(-2px);
+        }
+
+        /* Lightbox Modal */
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 5, 2, 0.95);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .lightbox.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90vh;
+            border: 2px solid var(--matrix-green);
+            box-shadow: 0 0 30px var(--matrix-green-glow);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: var(--matrix-green);
+            font-size: 2rem;
+            cursor: pointer;
+            background: none;
+            border: 1px solid var(--matrix-green);
+            width: 45px;
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .lightbox-close:hover {
+            background: var(--matrix-green);
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scanlines"></div>
+    <canvas id="matrix-canvas"></canvas>
+
+    <div class="container">
+        <!-- Top bar with return button -->
+        <div class="top-bar">
+            <a href="index.html" class="btn-back">
+                <span>&larr;</span> Powrót do index.html
+            </a>
+        </div>
+
+        <div class="page-title">
+            <h1>Archiwum Wizualne / Wersje Projektu</h1>
+        </div>
+
+        <!-- Images Showcase Grid -->
+        <div class="showcase-grid">
+            <!-- Left Image: lite.jpg -->
+            <div class="image-card" id="card-lite">
+                <div class="image-header">
+                    <span>ARCHIWUM_PROJEKTÓW // [LITE]</span>
+                    <span>lite.jpg</span>
+                </div>
+                <div class="image-container" onclick="openLightbox('lite.jpg')">
+                    <img src="lite.jpg" alt="Wersja LITE" onerror="this.src='https://via.placeholder.com/600x400/021205/00ff66?text=Brak+pliku+lite.jpg'">
+                </div>
+            </div>
+
+            <!-- Right Image: rage.jpg -->
+            <div class="image-card" id="card-rage">
+                <div class="image-header">
+                    <span>PORTFOLIO_RAGE // [RAGE]</span>
+                    <span>rage.jpg</span>
+                </div>
+                <div class="image-container" onclick="openLightbox('rage.jpg')">
+                    <img src="rage.jpg" alt="Wersja RAGE" onerror="this.src='https://via.placeholder.com/600x400/021205/00ff66?text=Brak+pliku+rage.jpg'">
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="contact-section">
+            <div class="contact-title">// Skontaktuj się ze mną //</div>
+            <div class="contact-grid">
+                <a href="mailto:imxeed@gmail.com" class="contact-btn">
+                    📧 e-mail: imxeed@gmail.com
+                </a>
+                <a href="tel:+48881250319" class="contact-btn">
+                    📞 nr tel: 881 250 319
+                </a>
+                <a href="https://t.me/ekstrawertyk" target="_blank" class="contact-btn">
+                    ✈️ telegram: @ekstrawertyk
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox Modal -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <button class="lightbox-close">&times;</button>
+        <img id="lightbox-img" src="" alt="Powiększenie">
+    </div>
+
+    <script>
+        /* Matrix Rain Background Effect */
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const characters = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$_&-+()/*";:?!~|';
+        const fontSize = 14;
+        let columns = Math.floor(canvas.width / fontSize);
+        let drops = Array(columns).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(3, 7, 3, 0.08)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#00ff66';
+            ctx.font = fontSize + '킨 "Share Tech Mono", monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = characters.charAt(Math.floor(Math.random() * characters.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 35);
+
+        /* Animation trigger on load: Matrix Build Effect from Bottom to Top */
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const cardLite = document.getElementById('card-lite');
+                const cardRage = document.getElementById('card-rage');
+
+                cardLite.classList.add('scanning', 'revealed');
+                cardRage.classList.add('scanning', 'revealed');
+
+                setTimeout(() => {
+                    cardLite.classList.remove('scanning');
+                    cardRage.classList.remove('scanning');
+                }, 1500);
+            }, 300);
+        });
+
+        /* Lightbox functionality */
+        function openLightbox(imageSrc) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            lightboxImg.src = imageSrc;
+            lightbox.classList.add('active');
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('active');
+        }
+    </script>
+</body>
+</html>
